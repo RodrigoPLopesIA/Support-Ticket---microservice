@@ -9,6 +9,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.rodrigolopes.ms.support_ticket.enums.TicketStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -40,7 +42,8 @@ public class SupportTicket {
     private String title;
     private String description;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private TicketStatus status;
 
     @CreatedDate
     @Column(nullable = false, updatable = false, name = "createdAt")
