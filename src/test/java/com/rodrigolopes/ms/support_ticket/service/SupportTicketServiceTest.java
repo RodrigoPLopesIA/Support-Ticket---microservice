@@ -3,6 +3,7 @@ package com.rodrigolopes.ms.support_ticket.service;
 import static org.mockito.Mockito.when;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,6 +17,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.rodrigolopes.ms.support_ticket.dto.RequestTicketDTO;
 import com.rodrigolopes.ms.support_ticket.dto.ResponseTicketDTO;
@@ -63,6 +68,23 @@ public class SupportTicketServiceTest {
                 supportTicket.getTitle(),
                 supportTicket.getDescription(),
                 TicketStatus.OPEN.name());
+    }
+
+    @Test
+    @DisplayName("Should retrieve all support tickets successfully")
+    public void testGetAllSupportTickets() {
+        var pageable = Pageable.unpaged();
+        var page = new PageImpl<>(List.of(supportTicket), PageRequest.of(1, 10), 10);
+        when(ticketSupportRepository.findAll(pageable)).thenReturn(page);
+        when(ticketMapper.toResponseDto(supportTicket)).thenReturn(responseDto);
+
+        Page<ResponseTicketDTO> result = supportTicketService.getAll(pageable);
+
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.getContent()).hasSize(1);
+        Assertions.assertThat(result.getContent().get(0).id()).isEqualTo(supportTicket.getId());
+        Assertions.assertThat(result.getContent().get(0).title()).isEqualTo("Issue with login");
+        Assertions.assertThat(result.getContent().get(0).description()).isEqualTo("Unable to login with correct credentials");
     }
 
     @Test
