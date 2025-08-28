@@ -45,7 +45,7 @@ public class SupportTicketController {
         var response = this.supportTicketService.create(body);
         var uri = UriComponentsBuilder.fromPath("/tickets/{id}").buildAndExpand(response.id()).toUri();
         return ResponseEntity.created(uri)
-                .body(this.supportTicketService.create(body));
+                .body(response);
     }
 
 }
