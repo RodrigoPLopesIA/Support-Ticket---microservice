@@ -7,6 +7,8 @@ import com.rodrigolopes.ms.support_ticket.mapper.TicketMapper;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.rodrigolopes.ms.support_ticket.dto.RequestTicketDTO;
@@ -24,6 +26,10 @@ public class SupportTicketService {
     @Autowired
     private TicketMapper ticketMapper;
 
+    public Page<ResponseTicketDTO> getAll(Pageable pageable) {
+        return ticketSupportRepository.findAll(pageable)
+                .map(ticketMapper::toResponseDto);
+    }
 
     public ResponseTicketDTO getById(UUID id) {
         var supportTicket = ticketSupportRepository.findById(id)
@@ -50,7 +56,7 @@ public class SupportTicketService {
         if (ticketSupportRepository.existsByTitleAndIdNot(requestDto.title(), id)) {
             throw new IllegalArgumentException("A ticket with this title already exists in another record.");
         }
-        
+
         existingTicket.setTitle(requestDto.title());
         existingTicket.setDescription(requestDto.description());
         existingTicket.setStatus(TicketStatus.valueOf(requestDto.status()));
