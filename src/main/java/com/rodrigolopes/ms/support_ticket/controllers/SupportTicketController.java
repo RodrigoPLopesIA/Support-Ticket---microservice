@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("/tickets")
-public class TicketSupportController {
+public class SupportTicketController {
 
     @GetMapping()
     public ResponseEntity<String> index() {
