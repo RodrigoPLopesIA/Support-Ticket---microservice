@@ -11,8 +11,6 @@ import com.rodrigolopes.ms.support_ticket.dto.RequestTicketDTO;
 import com.rodrigolopes.ms.support_ticket.dto.ResponseTicketDTO;
 import com.rodrigolopes.ms.support_ticket.repositories.TicketSupportRepository;
 
-import java.util.Date;
-import java.util.UUID;
 
 @Service
 public class SupportTicketService {
@@ -27,6 +25,10 @@ public class SupportTicketService {
 
     public ResponseTicketDTO createTicket(RequestTicketDTO requestTicketDTO) {
         
+        var supportTicket = ticketMapper.toEntity(requestTicketDTO);
+
+        var createdTicket = ticketSupportRepository.save(supportTicket);
+        return ticketMapper.toResponseDto(createdTicket);
 
     }
 }
