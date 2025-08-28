@@ -148,9 +148,11 @@ public class SupportTicketServiceTest {
     @DisplayName("Should delete a support ticket successfully")
     public void testDeleteSupportTicket() {
         var id = UUID.randomUUID();
-        Mockito.when(ticketSupportRepository.findById(id)).thenReturn(Optional.of(supportTicket));
-        supportTicketService.delete(id);
-        Mockito.verify(ticketSupportRepository, Mockito.times(1)).delete(supportTicket);
+        Mockito.when(ticketSupportRepository.existsById(id)).thenReturn(true);
         
+        supportTicketService.delete(id);
+        
+        Mockito.verify(ticketSupportRepository, Mockito.times(1)).deleteById(id);
+
     }
 }
