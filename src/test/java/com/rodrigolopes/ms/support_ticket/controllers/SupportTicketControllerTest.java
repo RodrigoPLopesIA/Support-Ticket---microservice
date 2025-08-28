@@ -221,6 +221,24 @@ public class SupportTicketControllerTest {
                                 .andExpect(jsonPath("$.status").value(404))
                                 .andExpect(jsonPath("$.errors").isEmpty());
         }
+
+        @Test
+        @DisplayName("should return 400 when calling the update endpoint with invalid data")
+        public void testUpdateWithInvalidData() throws Exception {
+                var invalidRequestBody = "{}";
+                var request = put("/tickets/{id}", supportTicket.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(invalidRequestBody);
+                mockMvc.perform(request)
+                                .andExpect(status().isBadRequest())
+                                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(jsonPath("$.path").value("/tickets/" + supportTicket.getId()))
+                                .andExpect(jsonPath("$.message").value("Invalid arguments!"))
+                                .andExpect(jsonPath("$.status").value(400))
+                                .andExpect(jsonPath("$.errors").isNotEmpty())
+                                .andExpect(jsonPath("$.errors.title").value("Title must not be empty"))
+                                .andExpect(jsonPath("$.errors.description").value("Description must not be empty"));
+        }
         
 
 }
