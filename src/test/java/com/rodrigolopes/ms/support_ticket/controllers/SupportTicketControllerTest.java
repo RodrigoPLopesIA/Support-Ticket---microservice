@@ -185,4 +185,23 @@ public class SupportTicketControllerTest {
                                 .andExpect(jsonPath("$.errors.description").value("Description must not be empty"));
         }
 
+        @Test
+        @DisplayName("should return 200 when calling the update endpoint with valid data and ID")
+        public void testUpdateWithValidDataAndId() throws Exception {
+                var request = put("/tickets/{id}", supportTicket.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body);
+                BDDMockito.given(this.supportTicketService.update(Mockito.eq(supportTicket.getId()),
+                                Mockito.any(RequestTicketDTO.class)))
+                                .willReturn(responseTicketDTO);
+                mockMvc.perform(request)
+                                .andExpect(status().isOk())
+                                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(jsonPath("$.id").value(supportTicket.getId().toString()))
+                                .andExpect(jsonPath("$.title").value(supportTicket.getTitle()))
+                                .andExpect(jsonPath("$.description").value(supportTicket.getDescription()))
+                                .andExpect(jsonPath("$.status").value(supportTicket.getStatus().name()));
+        }
+        
+
 }
