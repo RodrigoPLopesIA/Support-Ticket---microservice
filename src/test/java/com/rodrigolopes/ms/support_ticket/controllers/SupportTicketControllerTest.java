@@ -31,6 +31,8 @@ import com.rodrigolopes.ms.support_ticket.entities.SupportTicket;
 import com.rodrigolopes.ms.support_ticket.enums.TicketStatus;
 import com.rodrigolopes.ms.support_ticket.services.SupportTicketService;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @WebMvcTest(SupportTicketController.class)
 public class SupportTicketControllerTest {
 
@@ -114,6 +116,39 @@ public class SupportTicketControllerTest {
                                 .andExpect(jsonPath("$.description").value(supportTicket.getDescription()))
                                 .andExpect(jsonPath("$.status").value(supportTicket.getStatus().name())); 
                               
+        }
+
+        @Test
+        @DisplayName("Should return 404 when calling the show endpoint with invalid ID")
+        public void testShowWithInvalidId() throws Exception {
+                var invalidId = UUID.randomUUID();
+                var request = get("/tickets/{id}", invalidId)
+                                                .contentType(MediaType.APPLICATION_JSON);       
+
+                BDDMockito.given(this.supportTicketService.getById(invalidId))
+                                .willThrow(new EntityNotFoundException("Ticket not found"));
+
+                mockMvc.perform(request)
+                                .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("should return 201 when calling the store endpoint with valid data")
+        public void testStoreWithValidData() throws Exception {
+                var request = post("/tickets")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body);
+                BDDMockito.given(this.supportTicketService.create(Mockito.any(RequestTicketDTO.class)))
+                                .willReturn(responseTicketDTO);
+                
+                mockMvc.perform(request)
+                                .andExpect(status().isCreated())
+                                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(jsonPath("$.id").value(supportTicket.getId().toString()))
+                                .andExpect(jsonPath("$.title").value(supportTicket.getTitle()))
+                                .andExpect(jsonPath("$.description").value(supportTicket.getDescription()))
+                                .andExpect(jsonPath("$.status").value(supportTicket.getStatus().name()));
+
         }
 
 }
