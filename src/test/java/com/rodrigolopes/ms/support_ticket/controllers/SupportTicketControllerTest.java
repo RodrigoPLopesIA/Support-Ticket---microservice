@@ -186,6 +186,31 @@ public class SupportTicketControllerTest {
         }
 
         @Test
+        @DisplayName("should return 400 when calling the store endpoint with invalid enum value")
+        public void testStoreWithInvalidEnumValue() throws Exception {
+                String invalidRequestBodyStatus = """
+                                {
+                                    "title": "Sample Ticket",
+                                    "description": "This is a sample ticket description.",
+                                    "status": "INVALID_STATUS"
+                                }
+                                """;
+                var request = post("/tickets")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(invalidRequestBodyStatus);
+                                
+                mockMvc.perform(request)
+                                .andExpect(status().isBadRequest())
+                                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(jsonPath("$.path").value("/tickets"))
+                                .andExpect(jsonPath("$.message").value("Invalid arguments!"))
+                                .andExpect(jsonPath("$.status").value(400))
+                                .andExpect(jsonPath("$.errors").isNotEmpty())
+                                .andExpect(jsonPath("$.errors.status")
+                                                .value("Status must be one of: OPEN, CLOSED, PENDING"));
+        }
+
+        @Test
         @DisplayName("should return 200 when calling the update endpoint with valid data and ID")
         public void testUpdateWithValidDataAndId() throws Exception {
                 var request = put("/tickets/{id}", supportTicket.getId())
@@ -280,7 +305,7 @@ public class SupportTicketControllerTest {
         public void testDeleteWithValidId() throws Exception {
                 var request = delete("/tickets/{id}", supportTicket.getId())
                                 .contentType(MediaType.APPLICATION_JSON);
-                                
+
                 BDDMockito.willDoNothing().given(this.supportTicketService).delete(supportTicket.getId());
 
                 mockMvc.perform(request)
