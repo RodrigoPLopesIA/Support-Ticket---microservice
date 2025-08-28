@@ -52,4 +52,13 @@ public class SupportTicketService {
 
         return ticketMapper.toResponseDto(updatedTicket);
     }
+
+    public void delete(UUID id) {
+
+        if (!ticketSupportRepository.existsById(id)) {
+            throw new EntityNotFoundException("Ticket not found with id: " + id);
+        }
+        
+        ticketSupportRepository.deleteById(id);
+    }
 }
