@@ -69,18 +69,30 @@ public class SupportTicketServiceTest {
     @DisplayName("Should retrieve a support ticket by ID successfully")
     public void testGetSupportTicketById() {
         var id = UUID.randomUUID();
-        
+
         Mockito.when(ticketSupportRepository.findById(id)).thenReturn(Optional.of(supportTicket));
         Mockito.when(ticketMapper.toResponseDto(supportTicket)).thenReturn(responseDto);
-        
+
         var result = supportTicketService.getById(id);
-        
+
         Assertions.assertThat(result).isNotNull();
         Assertions.assertThat(result.id()).isEqualTo(supportTicket.getId());
         Assertions.assertThat(result.title()).isEqualTo("Issue with login");
         Assertions.assertThat(result.description()).isEqualTo("Unable to login with correct credentials");
-        
+
         Mockito.verify(ticketSupportRepository, Mockito.times(1)).findById(id);
+    }
+
+    @Test
+    @DisplayName("Should throw exception when ticket not found by ID")
+    public void testGetSupportTicketById_NotFound() {
+        var id = UUID.randomUUID();
+        Mockito.when(ticketSupportRepository.findById(id)).thenReturn(Optional.empty());
+        Assertions.assertThatThrownBy(() -> supportTicketService.getById(id))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("Ticket not found with id: " + id);
+        Mockito.verify(ticketSupportRepository, Mockito.times(1)).findById(id);
+
     }
 
     @Test
