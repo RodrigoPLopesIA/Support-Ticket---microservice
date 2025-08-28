@@ -1,5 +1,7 @@
 package com.rodrigolopes.ms.support_ticket.service;
 
+import static org.mockito.Mockito.when;
+
 import java.util.Date;
 import java.util.UUID;
 
@@ -37,6 +39,7 @@ public class SupportTicketServiceTest {
     ResponseTicketDTO responseDto;
     SupportTicket supportTicket;
     RequestTicketDTO requestDto;
+
     @BeforeEach
     public void setup() {
         supportTicket = SupportTicket.builder()
@@ -44,23 +47,32 @@ public class SupportTicketServiceTest {
                 .title("Issue with login")
                 .description("Unable to login with correct credentials")
                 .build();
-        responseDto = new ResponseTicketDTO(supportTicket.getId(),
+
+        responseDto = new ResponseTicketDTO(
+                supportTicket.getId(),
                 supportTicket.getTitle(),
-                supportTicket.getDescription(), TicketStatus.OPEN.name(), new Date().toString(), new Date().toString());
-        requestDto = ticketMapper.toRequestDto(supportTicket);
+                supportTicket.getDescription(),
+                TicketStatus.OPEN.name(),
+                new Date().toString(),
+                new Date().toString());
+
+        requestDto = new RequestTicketDTO(
+                supportTicket.getTitle(),
+                supportTicket.getDescription(),
+                TicketStatus.OPEN.name());
     }
 
     @Test
     @DisplayName("Should create a support ticket successfully")
     public void testCreateSupportTicket() {
-        // Arrange
 
         Mockito.when(ticketMapper.toEntity(requestDto)).thenReturn(supportTicket);
         Mockito.when(ticketMapper.toResponseDto(supportTicket)).thenReturn(responseDto);
+        Mockito.when(ticketSupportRepository.existsByTitle(Mockito.anyString())).thenReturn(false);
         Mockito.when(ticketSupportRepository.save(Mockito.any(SupportTicket.class))).thenReturn(supportTicket);
 
         // Act
-        ResponseTicketDTO result = supportTicketService.createTicket(requestDto);
+        ResponseTicketDTO result = supportTicketService.create(requestDto);
 
         // Assert
         Assertions.assertThat(result).isNotNull();

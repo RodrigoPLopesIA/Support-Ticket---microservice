@@ -11,10 +11,8 @@ import com.rodrigolopes.ms.support_ticket.dto.RequestTicketDTO;
 import com.rodrigolopes.ms.support_ticket.dto.ResponseTicketDTO;
 import com.rodrigolopes.ms.support_ticket.repositories.TicketSupportRepository;
 
-
 @Service
 public class SupportTicketService {
-    
 
     @Autowired
     private TicketSupportRepository ticketSupportRepository;
@@ -22,9 +20,11 @@ public class SupportTicketService {
     @Autowired
     private TicketMapper ticketMapper;
 
+    public ResponseTicketDTO create(RequestTicketDTO requestTicketDTO) {
 
-    public ResponseTicketDTO createTicket(RequestTicketDTO requestTicketDTO) {
-        
+        if (this.ticketSupportRepository.existsByTitle(requestTicketDTO.title())) {
+            throw new IllegalArgumentException("A ticket with this title already exists.");
+        }
         var supportTicket = ticketMapper.toEntity(requestTicketDTO);
 
         var createdTicket = ticketSupportRepository.save(supportTicket);

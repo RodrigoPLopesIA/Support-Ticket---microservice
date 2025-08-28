@@ -8,4 +8,6 @@ import com.rodrigolopes.ms.support_ticket.entities.SupportTicket;
 
 public interface TicketSupportRepository extends JpaRepository<SupportTicket, UUID> {
     
+
+    Boolean existsByTitle(String title);
 }
