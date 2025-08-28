@@ -25,7 +25,7 @@ public class SupportTicketServiceTest {
     @Mock
     private TicketSupportRepository ticketSupportRepository;
 
-    @Autowired 
+    @Mock
     private TicketMapper ticketMapper;
     @Test
     @DisplayName("Should create a support ticket successfully")
