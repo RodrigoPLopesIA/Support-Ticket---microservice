@@ -24,6 +24,13 @@ public class SupportTicketService {
     @Autowired
     private TicketMapper ticketMapper;
 
+
+    public ResponseTicketDTO getById(UUID id) {
+        var supportTicket = ticketSupportRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Ticket not found with id: " + id));
+        return ticketMapper.toResponseDto(supportTicket);
+    }
+
     public ResponseTicketDTO create(RequestTicketDTO requestTicketDTO) {
 
         if (this.ticketSupportRepository.existsByTitle(requestTicketDTO.title())) {
@@ -58,7 +65,7 @@ public class SupportTicketService {
         if (!ticketSupportRepository.existsById(id)) {
             throw new EntityNotFoundException("Ticket not found with id: " + id);
         }
-        
+
         ticketSupportRepository.deleteById(id);
     }
 }
