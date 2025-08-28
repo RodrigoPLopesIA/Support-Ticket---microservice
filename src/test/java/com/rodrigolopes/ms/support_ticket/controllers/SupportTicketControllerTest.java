@@ -240,5 +240,22 @@ public class SupportTicketControllerTest {
                                 .andExpect(jsonPath("$.errors.description").value("Description must not be empty"));
         }
         
+        @Test
+        @DisplayName("should return 400 when calling the update endpoint with duplicated title")
+        public void testUpdateWithDuplicatedTitle() throws Exception {
+                var request = put("/tickets/{id}", supportTicket.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body);
+                BDDMockito.given(this.supportTicketService.update(Mockito.eq(supportTicket.getId()),
+                                Mockito.any(RequestTicketDTO.class)))
+                                .willThrow(new IllegalArgumentException("A ticket with this title already exists."));
+                mockMvc.perform(request)
+                                .andExpect(status().isBadRequest())
+                                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(jsonPath("$.path").value("/tickets/" + supportTicket.getId()))
+                                .andExpect(jsonPath("$.message").value("A ticket with this title already exists."))
+                                .andExpect(jsonPath("$.status").value(400))
+                                .andExpect(jsonPath("$.errors").isEmpty());     
+        }
 
 }
