@@ -14,19 +14,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.assertj.MockMvcTester.MockMvcRequestBuilder;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.catalina.connector.Request;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -110,7 +105,7 @@ public class SupportTicketControllerTest {
 
                 BDDMockito.given(this.supportTicketService.getById(supportTicket.getId()))
                                 .willReturn(responseTicketDTO);
-                                
+
                 mockMvc.perform(request)
                                 .andExpect(status().isOk())
                                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
