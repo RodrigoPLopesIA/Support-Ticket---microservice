@@ -66,6 +66,24 @@ public class SupportTicketServiceTest {
     }
 
     @Test
+    @DisplayName("Should retrieve a support ticket by ID successfully")
+    public void testGetSupportTicketById() {
+        var id = UUID.randomUUID();
+        
+        Mockito.when(ticketSupportRepository.findById(id)).thenReturn(Optional.of(supportTicket));
+        Mockito.when(ticketMapper.toResponseDto(supportTicket)).thenReturn(responseDto);
+        
+        var result = supportTicketService.getById(id);
+        
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.id()).isEqualTo(supportTicket.getId());
+        Assertions.assertThat(result.title()).isEqualTo("Issue with login");
+        Assertions.assertThat(result.description()).isEqualTo("Unable to login with correct credentials");
+        
+        Mockito.verify(ticketSupportRepository, Mockito.times(1)).findById(id);
+    }
+
+    @Test
     @DisplayName("Should create a support ticket successfully")
     public void testCreateSupportTicket() {
 
@@ -75,7 +93,6 @@ public class SupportTicketServiceTest {
         Mockito.when(ticketSupportRepository.save(Mockito.any(SupportTicket.class))).thenReturn(supportTicket);
 
         ResponseTicketDTO result = supportTicketService.create(requestDto);
-
 
         Assertions.assertThat(result).isNotNull();
         Assertions.assertThat(result.id()).isEqualTo(supportTicket.getId());
@@ -90,7 +107,6 @@ public class SupportTicketServiceTest {
     @DisplayName("Should throw exception when creating a ticket with duplicate title")
     public void testCreateSupportTicket_DuplicateTitle() {
         Mockito.when(ticketSupportRepository.existsByTitle(Mockito.anyString())).thenReturn(true);
-
 
         Assertions.assertThatThrownBy(() -> supportTicketService.create(requestDto))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -114,7 +130,6 @@ public class SupportTicketServiceTest {
         var result = supportTicketService.update(id, requestDto);
 
         Assertions.assertThat(result).isNotNull();
-
 
         Mockito.verify(ticketSupportRepository, Mockito.times(1)).findById(id);
         Mockito.verify(ticketSupportRepository, Mockito.times(1)).save(supportTicket);
@@ -140,7 +155,6 @@ public class SupportTicketServiceTest {
         Mockito.when(ticketSupportRepository.findById(id)).thenReturn(Optional.of(supportTicket));
         Mockito.when(ticketSupportRepository.existsByTitleAndIdNot(requestDto.title(), id)).thenReturn(true);
 
-
         Assertions.assertThatThrownBy(() -> supportTicketService.update(id, requestDto))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("A ticket with this title already exists in another record.");
@@ -154,12 +168,13 @@ public class SupportTicketServiceTest {
     public void testDeleteSupportTicket() {
         var id = UUID.randomUUID();
         Mockito.when(ticketSupportRepository.existsById(id)).thenReturn(true);
-        
+
         supportTicketService.delete(id);
-        
+
         Mockito.verify(ticketSupportRepository, Mockito.times(1)).deleteById(id);
 
     }
+
     @Test
     @DisplayName("Should throw exception when deleting a non-existent ticket")
     public void testDeleteSupportTicket_NotFound() {
