@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  ticket_database:
+    image: postgres:15
+    container_name: ticket_database
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ticket_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ticket_db_data:/var/lib/postgresql/data
+
+volumes:
+  ticket_db_data:
