@@ -110,6 +110,7 @@ public class SupportTicketControllerTest {
 
                 BDDMockito.given(this.supportTicketService.getById(supportTicket.getId()))
                                 .willReturn(responseTicketDTO);
+                                
                 mockMvc.perform(request)
                                 .andExpect(status().isOk())
                                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
