@@ -39,7 +39,9 @@ public class SupportTicket {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(nullable = false)
     private String title;
+
     private String description;
 
     @Enumerated(EnumType.STRING)
