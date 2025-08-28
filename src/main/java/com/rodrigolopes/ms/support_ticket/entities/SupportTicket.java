@@ -45,7 +45,7 @@ public class SupportTicket {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private TicketStatus status;
+    private TicketStatus status = TicketStatus.OPEN;
 
     @CreatedDate
     @Column(nullable = false, updatable = false, name = "createdAt")
