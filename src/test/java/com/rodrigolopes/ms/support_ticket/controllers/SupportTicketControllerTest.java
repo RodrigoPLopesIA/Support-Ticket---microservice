@@ -39,65 +39,85 @@ import com.rodrigolopes.ms.support_ticket.services.SupportTicketService;
 @WebMvcTest(SupportTicketController.class)
 public class SupportTicketControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockitoBean
-    private SupportTicketService supportTicketService;
+        @MockitoBean
+        private SupportTicketService supportTicketService;
 
-    SupportTicket supportTicket;
-    ResponseTicketDTO responseTicketDTO;
-    RequestTicketDTO requestTicketDTO;
-    Page<ResponseTicketDTO> responseTicketDTOPage;
+        SupportTicket supportTicket;
+        ResponseTicketDTO responseTicketDTO;
+        RequestTicketDTO requestTicketDTO;
+        Page<ResponseTicketDTO> responseTicketDTOPage;
 
-    String body;
+        String body;
 
-    @BeforeEach
-    public void setup() throws JsonProcessingException {
-        supportTicket = SupportTicket.builder()
-                .id(UUID.randomUUID())
-                .title("Sample Ticket")
-                .description("This is a sample ticket description.")
-                .status(TicketStatus.OPEN)
-                .build();
-        responseTicketDTO = new ResponseTicketDTO(
-                supportTicket.getId(),
-                supportTicket.getTitle(),
-                supportTicket.getDescription(),
-                supportTicket.getStatus().name(),
-                new Date().toString(),
-                new Date().toString());
+        @BeforeEach
+        public void setup() throws JsonProcessingException {
+                supportTicket = SupportTicket.builder()
+                                .id(UUID.randomUUID())
+                                .title("Sample Ticket")
+                                .description("This is a sample ticket description.")
+                                .status(TicketStatus.OPEN)
+                                .build();
+                responseTicketDTO = new ResponseTicketDTO(
+                                supportTicket.getId(),
+                                supportTicket.getTitle(),
+                                supportTicket.getDescription(),
+                                supportTicket.getStatus().name(),
+                                new Date().toString(),
+                                new Date().toString());
 
-        requestTicketDTO = new RequestTicketDTO(
-                supportTicket.getTitle(),
-                supportTicket.getDescription(),
-                supportTicket.getStatus().name());
+                requestTicketDTO = new RequestTicketDTO(
+                                supportTicket.getTitle(),
+                                supportTicket.getDescription(),
+                                supportTicket.getStatus().name());
 
-        responseTicketDTOPage = new PageImpl<>(List.of(responseTicketDTO), PageRequest.of(0, 100),
-                1);
+                responseTicketDTOPage = new PageImpl<>(List.of(responseTicketDTO), PageRequest.of(0, 100),
+                                1);
 
-        body = new ObjectMapper().writeValueAsString(requestTicketDTO);
+                body = new ObjectMapper().writeValueAsString(requestTicketDTO);
 
-    }
+        }
 
-    @Test
-    @DisplayName("Should return 200 when calling the index endpoint")
-    public void testIndex() throws Exception {
+        @Test
+        @DisplayName("Should return 200 when calling the index endpoint")
+        public void testIndex() throws Exception {
 
-        var request = get("/tickets")
-                .contentType(MediaType.APPLICATION_JSON);
+                var request = get("/tickets")
+                                .contentType(MediaType.APPLICATION_JSON);
 
-        BDDMockito.given(this.supportTicketService.getAll(Mockito.any(Pageable.class)))
-                .willReturn(responseTicketDTOPage);
+                BDDMockito.given(this.supportTicketService.getAll(Mockito.any(Pageable.class)))
+                                .willReturn(responseTicketDTOPage);
 
-        mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.content[0].id").value(supportTicket.getId().toString()))
-                .andExpect(jsonPath("$.content[0].title").value(supportTicket.getTitle()))
-                .andExpect(jsonPath("$.content[0].description").value(supportTicket.getDescription()))
-                .andExpect(jsonPath("$.content[0].status").value(supportTicket.getStatus().name()));
+                mockMvc.perform(request)
+                                .andExpect(status().isOk())
+                                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(jsonPath("$.content[0].id").value(supportTicket.getId().toString()))
+                                .andExpect(jsonPath("$.content[0].title").value(supportTicket.getTitle()))
+                                .andExpect(jsonPath("$.content[0].description").value(supportTicket.getDescription()))
+                                .andExpect(jsonPath("$.content[0].status").value(supportTicket.getStatus().name()));
 
-    }
+        }
+
+        @Test
+        @DisplayName("Should return 200 when calling the show endpoint with valid ID")
+        public void testShowWithValidId() throws Exception {
+
+                var request = get("/tickets/{id}", supportTicket.getId())
+                                                .contentType(MediaType.APPLICATION_JSON);
+
+
+                BDDMockito.given(this.supportTicketService.getById(supportTicket.getId()))
+                                .willReturn(responseTicketDTO);
+                mockMvc.perform(request)
+                                .andExpect(status().isOk())
+                                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(jsonPath("$.id").value(supportTicket.getId().toString()))
+                                .andExpect(jsonPath("$.title").value(supportTicket.getTitle()))
+                                .andExpect(jsonPath("$.description").value(supportTicket.getDescription()))
+                                .andExpect(jsonPath("$.status").value(supportTicket.getStatus().name())); 
+                              
+        }
 
 }
