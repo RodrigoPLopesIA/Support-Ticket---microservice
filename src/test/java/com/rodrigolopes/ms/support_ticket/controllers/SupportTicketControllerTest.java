@@ -258,4 +258,22 @@ public class SupportTicketControllerTest {
                                 .andExpect(jsonPath("$.errors").isEmpty());     
         }
 
+
+        @Test
+        @DisplayName("should return 404 when calling the delete endpoint with invalid ID")
+        public void testDeleteWithInvalidId() throws Exception {
+                var invalidId = UUID.randomUUID();
+                var request = delete("/tickets/{id}", invalidId)
+                                .contentType(MediaType.APPLICATION_JSON);
+                BDDMockito.willThrow(new EntityNotFoundException("Ticket not found with id: " + invalidId))
+                                .given(this.supportTicketService).delete(invalidId);
+                mockMvc.perform(request)
+                                .andExpect(status().isNotFound())
+                                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(jsonPath("$.path").value("/tickets/" + invalidId))
+                                .andExpect(jsonPath("$.message").value("Ticket not found with id: " + invalidId))
+                                .andExpect(jsonPath("$.status").value(404))
+                                .andExpect(jsonPath("$.errors").isEmpty());
+        }
+
 }
