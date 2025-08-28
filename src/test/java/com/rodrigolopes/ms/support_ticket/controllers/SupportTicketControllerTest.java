@@ -239,7 +239,7 @@ public class SupportTicketControllerTest {
                                 .andExpect(jsonPath("$.errors.title").value("Title must not be empty"))
                                 .andExpect(jsonPath("$.errors.description").value("Description must not be empty"));
         }
-        
+
         @Test
         @DisplayName("should return 400 when calling the update endpoint with duplicated title")
         public void testUpdateWithDuplicatedTitle() throws Exception {
@@ -255,9 +255,8 @@ public class SupportTicketControllerTest {
                                 .andExpect(jsonPath("$.path").value("/tickets/" + supportTicket.getId()))
                                 .andExpect(jsonPath("$.message").value("A ticket with this title already exists."))
                                 .andExpect(jsonPath("$.status").value(400))
-                                .andExpect(jsonPath("$.errors").isEmpty());     
+                                .andExpect(jsonPath("$.errors").isEmpty());
         }
-
 
         @Test
         @DisplayName("should return 404 when calling the delete endpoint with invalid ID")
@@ -274,6 +273,18 @@ public class SupportTicketControllerTest {
                                 .andExpect(jsonPath("$.message").value("Ticket not found with id: " + invalidId))
                                 .andExpect(jsonPath("$.status").value(404))
                                 .andExpect(jsonPath("$.errors").isEmpty());
+        }
+
+        @Test
+        @DisplayName("should return 204 when calling the delete endpoint with valid ID")
+        public void testDeleteWithValidId() throws Exception {
+                var request = delete("/tickets/{id}", supportTicket.getId())
+                                .contentType(MediaType.APPLICATION_JSON);
+                                
+                BDDMockito.willDoNothing().given(this.supportTicketService).delete(supportTicket.getId());
+
+                mockMvc.perform(request)
+                                .andExpect(status().isNoContent());
         }
 
 }
