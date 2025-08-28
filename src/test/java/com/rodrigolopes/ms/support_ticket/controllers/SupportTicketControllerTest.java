@@ -202,6 +202,25 @@ public class SupportTicketControllerTest {
                                 .andExpect(jsonPath("$.description").value(supportTicket.getDescription()))
                                 .andExpect(jsonPath("$.status").value(supportTicket.getStatus().name()));
         }
+
+        @Test
+        @DisplayName("should return 404 when calling the update endpoint with valid data and invalid ID")
+        public void testUpdateWithValidDataAndInvalidId() throws Exception {
+                var invalidId = UUID.randomUUID();
+                var request = put("/tickets/{id}", invalidId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body);
+                BDDMockito.given(this.supportTicketService.update(Mockito.eq(invalidId),
+                                Mockito.any(RequestTicketDTO.class)))
+                                .willThrow(new EntityNotFoundException("Ticket not found"));
+                mockMvc.perform(request)
+                                .andExpect(status().isNotFound())
+                                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(jsonPath("$.path").value("/tickets/" + invalidId))
+                                .andExpect(jsonPath("$.message").value("Ticket not found"))
+                                .andExpect(jsonPath("$.status").value(404))
+                                .andExpect(jsonPath("$.errors").isEmpty());
+        }
         
 
 }
