@@ -19,29 +19,34 @@ import jakarta.servlet.http.HttpServletRequest;
 @ControllerAdvice
 public class ControllerErrorHandler {
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorResponseDTO> handleEntityNotFoundException(EntityNotFoundException ex,
-            HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponseDTO(request.getRequestURI(), ex.getMessage(), HttpStatus.NOT_FOUND.value()));
-    }
+        @ExceptionHandler(EntityNotFoundException.class)
+        public ResponseEntity<ErrorResponseDTO> handleEntityNotFoundException(EntityNotFoundException ex,
+                        HttpServletRequest request) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(new ErrorResponseDTO(request.getRequestURI(), ex.getMessage(),
+                                                HttpStatus.NOT_FOUND.value()));
+        }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponseDTO> handleIllegalArgumentException(IllegalArgumentException ex,
-            HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponseDTO(request.getRequestURI(), ex.getMessage(), HttpStatus.BAD_REQUEST.value()));
-    }
+        @ExceptionHandler(IllegalArgumentException.class)
+        public ResponseEntity<ErrorResponseDTO> handleIllegalArgumentException(IllegalArgumentException ex,
+                        HttpServletRequest request) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(new ErrorResponseDTO(request.getRequestURI(), ex.getMessage(),
+                                                HttpStatus.BAD_REQUEST.value()));
+        }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponseDTO> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex,
-            HttpServletRequest request) {
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<ErrorResponseDTO> handleMethodArgumentNotValidException(
+                        MethodArgumentNotValidException ex,
+                        HttpServletRequest request) {
 
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors()
-                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponseDTO(request.getRequestURI(), "Invalid arguments!", HttpStatus.BAD_REQUEST.value(),
-                        errors));
-    }
+                Map<String, String> errors = new HashMap<>();
+                ex.getBindingResult().getFieldErrors()
+                                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(new ErrorResponseDTO(request.getRequestURI(), "Invalid arguments!",
+                                                HttpStatus.BAD_REQUEST.value(),
+                                                errors));
+        }
+
 }
