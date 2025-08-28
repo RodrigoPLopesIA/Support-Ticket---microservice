@@ -22,7 +22,6 @@ import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rodrigolopes.ms.support_ticket.dto.RequestTicketDTO;
@@ -102,8 +101,7 @@ public class SupportTicketControllerTest {
         public void testShowWithValidId() throws Exception {
 
                 var request = get("/tickets/{id}", supportTicket.getId())
-                                                .contentType(MediaType.APPLICATION_JSON);
-
+                                .contentType(MediaType.APPLICATION_JSON);
 
                 BDDMockito.given(this.supportTicketService.getById(supportTicket.getId()))
                                 .willReturn(responseTicketDTO);
@@ -114,8 +112,8 @@ public class SupportTicketControllerTest {
                                 .andExpect(jsonPath("$.id").value(supportTicket.getId().toString()))
                                 .andExpect(jsonPath("$.title").value(supportTicket.getTitle()))
                                 .andExpect(jsonPath("$.description").value(supportTicket.getDescription()))
-                                .andExpect(jsonPath("$.status").value(supportTicket.getStatus().name())); 
-                              
+                                .andExpect(jsonPath("$.status").value(supportTicket.getStatus().name()));
+
         }
 
         @Test
@@ -123,7 +121,7 @@ public class SupportTicketControllerTest {
         public void testShowWithInvalidId() throws Exception {
                 var invalidId = UUID.randomUUID();
                 var request = get("/tickets/{id}", invalidId)
-                                                .contentType(MediaType.APPLICATION_JSON);       
+                                .contentType(MediaType.APPLICATION_JSON);
 
                 BDDMockito.given(this.supportTicketService.getById(invalidId))
                                 .willThrow(new EntityNotFoundException("Ticket not found"));
@@ -140,7 +138,7 @@ public class SupportTicketControllerTest {
                                 .content(body);
                 BDDMockito.given(this.supportTicketService.create(Mockito.any(RequestTicketDTO.class)))
                                 .willReturn(responseTicketDTO);
-                
+
                 mockMvc.perform(request)
                                 .andExpect(status().isCreated())
                                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -149,6 +147,42 @@ public class SupportTicketControllerTest {
                                 .andExpect(jsonPath("$.description").value(supportTicket.getDescription()))
                                 .andExpect(jsonPath("$.status").value(supportTicket.getStatus().name()));
 
+        }
+
+        @Test
+        @DisplayName("should return 400 when calling the store endpoint with duplicated title")
+        public void testStoreWithDuplicatedTitle() throws Exception {
+                var request = post("/tickets")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body);
+                BDDMockito.given(this.supportTicketService.create(Mockito.any(RequestTicketDTO.class)))
+                                .willThrow(new IllegalArgumentException("A ticket with this title already exists."));
+                mockMvc.perform(request)
+                                .andExpect(status().isBadRequest())
+                                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(jsonPath("$.path").value("/tickets"))
+                                .andExpect(jsonPath("$.message").value("A ticket with this title already exists."))
+                                .andExpect(jsonPath("$.status").value(400))
+                                .andExpect(jsonPath("$.errors").isEmpty());
+
+        }
+
+        @Test
+        @DisplayName("should return 400 when calling the store endpoint with invalid data")
+        public void testStoreWithInvalidData() throws Exception {
+                var invalidRequestBody = "{}";
+                var request = post("/tickets")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(invalidRequestBody);
+                mockMvc.perform(request)
+                                .andExpect(status().isBadRequest())
+                                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(jsonPath("$.path").value("/tickets"))
+                                .andExpect(jsonPath("$.message").value("Invalid arguments!"))
+                                .andExpect(jsonPath("$.status").value(400))
+                                .andExpect(jsonPath("$.errors").isNotEmpty())
+                                .andExpect(jsonPath("$.errors.title").value("Title must not be empty"))
+                                .andExpect(jsonPath("$.errors.description").value("Description must not be empty"));
         }
 
 }
