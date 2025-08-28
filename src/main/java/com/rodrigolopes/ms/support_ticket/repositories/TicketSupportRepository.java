@@ -10,4 +10,6 @@ public interface TicketSupportRepository extends JpaRepository<SupportTicket, UU
     
 
     Boolean existsByTitle(String title);
+
+    boolean existsByTitleAndIdNot(String title, UUID id);
 }
