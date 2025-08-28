@@ -1,5 +1,7 @@
 package com.rodrigolopes.ms.support_ticket.dto;
 
-public record RequestTicketDTO(String title , String description, String status) {
+import jakarta.validation.constraints.NotBlank;
+
+public record RequestTicketDTO(@NotBlank String title, @NotBlank String description, String status) {
 
 }
