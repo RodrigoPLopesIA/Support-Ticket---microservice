@@ -1,13 +1,17 @@
 package com.rodrigolopes.ms.support_ticket.entities;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -25,6 +29,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
+@EntityListeners(AuditingEntityListener.class)
 public class SupportTicket {
 
 
@@ -38,10 +43,12 @@ public class SupportTicket {
     private String status;
 
     @CreatedDate
-    private Date createdAt;
+    @Column(nullable = false, updatable = false, name = "createdAt")
+    private Instant createdAt;
 
-    @UpdateTimestamp
-    private Date updatedAt;
+    @LastModifiedDate
+    @Column(nullable = false, name = "updatedAt")
+    private Instant updatedAt;
 
 
     
