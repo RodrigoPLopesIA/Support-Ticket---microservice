@@ -84,4 +84,18 @@ public class SupportTicketServiceTest {
                 .save(Mockito.any(SupportTicket.class));
     }
 
+
+    @Test
+    @DisplayName("Should throw exception when creating a ticket with duplicate title")
+    public void testCreateSupportTicket_DuplicateTitle() {
+        Mockito.when(ticketSupportRepository.existsByTitle(Mockito.anyString())).thenReturn(true);
+
+        // Act & Assert
+        Assertions.assertThatThrownBy(() -> supportTicketService.create(requestDto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("A ticket with this title already exists.");
+
+        Mockito.verify(ticketSupportRepository, Mockito.never())
+                .save(Mockito.any(SupportTicket.class));
+    }
 }
