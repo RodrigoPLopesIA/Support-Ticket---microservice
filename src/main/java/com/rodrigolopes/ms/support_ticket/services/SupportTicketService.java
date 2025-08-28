@@ -17,7 +17,7 @@ public class SupportTicketService {
 
 
     public ResponseTicketDTO createTicket(RequestTicketDTO requestTicketDTO) {
-        
+        return new ResponseTicketDTO();
 
     }
 }
