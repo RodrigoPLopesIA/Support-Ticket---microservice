@@ -3,6 +3,7 @@ package com.rodrigolopes.ms.support_ticket.service;
 import static org.mockito.Mockito.when;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.assertj.core.api.Assertions;
@@ -23,6 +24,8 @@ import com.rodrigolopes.ms.support_ticket.enums.TicketStatus;
 import com.rodrigolopes.ms.support_ticket.mapper.TicketMapper;
 import com.rodrigolopes.ms.support_ticket.repositories.TicketSupportRepository;
 import com.rodrigolopes.ms.support_ticket.services.SupportTicketService;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 public class SupportTicketServiceTest {
@@ -84,7 +87,6 @@ public class SupportTicketServiceTest {
                 .save(Mockito.any(SupportTicket.class));
     }
 
-
     @Test
     @DisplayName("Should throw exception when creating a ticket with duplicate title")
     public void testCreateSupportTicket_DuplicateTitle() {
@@ -97,5 +99,48 @@ public class SupportTicketServiceTest {
 
         Mockito.verify(ticketSupportRepository, Mockito.never())
                 .save(Mockito.any(SupportTicket.class));
+    }
+
+    @Test
+    @DisplayName("Should update a support ticket successfully")
+    public void testUpdateSupportTicket() {
+        var id = UUID.randomUUID();
+
+        Mockito.when(ticketSupportRepository.findById(id)).thenReturn(Optional.of(supportTicket));
+        Mockito.when(ticketSupportRepository.existsByTitleAndIdNot(requestDto.title(), id)).thenReturn(false);
+        Mockito.when(ticketSupportRepository.save(supportTicket)).thenReturn(supportTicket);
+
+        Mockito.when(ticketMapper.toResponseDto(supportTicket)).thenReturn(responseDto);
+
+        var result = supportTicketService.update(id, requestDto);
+
+        Assertions.assertThat(result).isNotNull();
+
+
+        Mockito.verify(ticketSupportRepository, Mockito.times(1)).findById(id);
+        Mockito.verify(ticketSupportRepository, Mockito.times(1)).save(supportTicket);
+    }
+
+    @Test
+    @DisplayName("Should throw exception when updating a non-existent ticket")
+    public void testUpdateSupportTicket_NotFound() {
+        var id = UUID.randomUUID();
+        Mockito.when(ticketSupportRepository.findById(id)).thenReturn(Optional.empty());
+        Assertions.assertThatThrownBy(() -> supportTicketService.update(id, requestDto))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("Ticket not found with id: " + id);
+    }
+
+    @Test
+    @DisplayName("Should throw exception when updating a ticket with duplicate title")
+    public void testUpdateSupportTicket_DuplicateTitle() {
+        var id = UUID.randomUUID();
+        Mockito.when(ticketSupportRepository.findById(id)).thenReturn(Optional.of(supportTicket));
+        Mockito.when(ticketSupportRepository.existsByTitleAndIdNot(requestDto.title(), id)).thenReturn(true);
+
+
+        Assertions.assertThatThrownBy(() -> supportTicketService.update(id, requestDto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("A ticket with this title already exists in another record.");
     }
 }
