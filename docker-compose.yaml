@@ -1,6 +1,7 @@
 version: '3.9'
 
 services:
+
   ticket_database:
     image: postgres:15
     container_name: ticket_database
@@ -50,5 +51,22 @@ services:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+
+  ticket_service:
+    build:
+      context: .   # raiz do projeto onde está o Dockerfile
+      dockerfile: Dockerfile
+    container_name: ticket_service
+    depends_on:
+      - ticket_database
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ticket_database:5432/ticket_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "8080:8080"
+
 volumes:
   ticket_db_data:
