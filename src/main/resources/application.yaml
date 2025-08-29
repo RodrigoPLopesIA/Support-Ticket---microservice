@@ -1,11 +1,13 @@
 spring:
   application:
     name: support_ticket
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/ticket_db
-    username: user
-    password: password
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ticket_db}
+    username: ${SPRING_DATASOURCE_USERNAME:user}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,17 +15,20 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
   kafka:
     producer:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       acks: all
       retries: 3
     consumer:
+      bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: ${SPRING_KAFKA_CONSUMER_GROUP:ticket-consumer-group}
 
 kafka:
   topic:
-    ticket-events: ticket-events
+    ticket-events: ${KAFKA_TOPIC_TICKET_EVENTS:ticket-events}
