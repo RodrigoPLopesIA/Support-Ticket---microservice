@@ -55,8 +55,9 @@ public class SupportTicketService {
         var createdTicket = ticketSupportRepository.save(supportTicket);
 
         var response = ticketMapper.toResponseDto(createdTicket);
+        
         producerService
-                .sendMessage("test");
+                .sendMessage(new KafkaMessageDTO(EventEnum.CREATED, response.id(), new Date(), response));
         return response;
 
     }

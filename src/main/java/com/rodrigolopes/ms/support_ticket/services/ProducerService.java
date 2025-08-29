@@ -10,10 +10,10 @@ import com.rodrigolopes.ms.support_ticket.dto.KafkaMessageDTO;
 public class ProducerService {
 
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void sendMessage(String message) {
-        kafkaTemplate.send("ticket-events", message);
+    public void sendMessage(KafkaMessageDTO payload) {
+        kafkaTemplate.send("ticket-events", payload);
     }
 
 }
