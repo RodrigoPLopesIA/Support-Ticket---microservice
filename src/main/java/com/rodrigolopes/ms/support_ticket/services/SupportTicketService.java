@@ -1,16 +1,21 @@
 package com.rodrigolopes.ms.support_ticket.services;
 
 import com.fasterxml.jackson.databind.DatabindException;
+import com.rodrigolopes.ms.support_ticket.enums.EventEnum;
 import com.rodrigolopes.ms.support_ticket.enums.TicketStatus;
 import com.rodrigolopes.ms.support_ticket.mapper.TicketMapper;
 
+import java.util.Date;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties.Producer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import com.rodrigolopes.ms.support_ticket.dto.KafkaMessageDTO;
 import com.rodrigolopes.ms.support_ticket.dto.RequestTicketDTO;
 import com.rodrigolopes.ms.support_ticket.dto.ResponseTicketDTO;
 import com.rodrigolopes.ms.support_ticket.repositories.TicketSupportRepository;
@@ -25,6 +30,9 @@ public class SupportTicketService {
 
     @Autowired
     private TicketMapper ticketMapper;
+
+    @Autowired
+    private ProducerService producerService;
 
     public Page<ResponseTicketDTO> getAll(Pageable pageable) {
         return ticketSupportRepository.findAll(pageable)
@@ -45,7 +53,12 @@ public class SupportTicketService {
         var supportTicket = ticketMapper.toEntity(requestTicketDTO);
 
         var createdTicket = ticketSupportRepository.save(supportTicket);
-        return ticketMapper.toResponseDto(createdTicket);
+
+        var response = ticketMapper.toResponseDto(createdTicket);
+
+        producerService
+                .sendMessage(EventEnum.CREATED, response);
+        return response;
 
     }
 
@@ -63,14 +76,18 @@ public class SupportTicketService {
 
         var updatedTicket = ticketSupportRepository.save(existingTicket);
 
-        return ticketMapper.toResponseDto(updatedTicket);
+        var response = ticketMapper.toResponseDto(updatedTicket);
+        producerService
+                .sendMessage(EventEnum.UPDATED, response);
+        return response;
     }
 
     public void delete(UUID id) {
+        var response = this.ticketSupportRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Ticket not found with id: " + id));
 
-        if (!ticketSupportRepository.existsById(id)) {
-            throw new EntityNotFoundException("Ticket not found with id: " + id);
-        }
+        producerService
+                .sendMessage(EventEnum.DELETED, ticketMapper.toResponseDto(response));
 
         ticketSupportRepository.deleteById(id);
     }

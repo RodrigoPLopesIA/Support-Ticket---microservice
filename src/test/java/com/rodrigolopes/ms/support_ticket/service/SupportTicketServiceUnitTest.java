@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.kafka.common.quota.ClientQuotaAlteration.Op;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,15 +26,17 @@ import org.springframework.data.domain.Pageable;
 import com.rodrigolopes.ms.support_ticket.dto.RequestTicketDTO;
 import com.rodrigolopes.ms.support_ticket.dto.ResponseTicketDTO;
 import com.rodrigolopes.ms.support_ticket.entities.SupportTicket;
+import com.rodrigolopes.ms.support_ticket.enums.EventEnum;
 import com.rodrigolopes.ms.support_ticket.enums.TicketStatus;
 import com.rodrigolopes.ms.support_ticket.mapper.TicketMapper;
 import com.rodrigolopes.ms.support_ticket.repositories.TicketSupportRepository;
+import com.rodrigolopes.ms.support_ticket.services.ProducerService;
 import com.rodrigolopes.ms.support_ticket.services.SupportTicketService;
 
 import jakarta.persistence.EntityNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
-public class SupportTicketServiceTest {
+public class SupportTicketServiceUnitTest {
 
     @InjectMocks
     private SupportTicketService supportTicketService;
@@ -43,6 +46,9 @@ public class SupportTicketServiceTest {
 
     @Mock
     private TicketMapper ticketMapper;
+
+    @Mock
+    private ProducerService producerService;
 
     ResponseTicketDTO responseDto;
     SupportTicket supportTicket;
@@ -84,7 +90,8 @@ public class SupportTicketServiceTest {
         Assertions.assertThat(result.getContent()).hasSize(1);
         Assertions.assertThat(result.getContent().get(0).id()).isEqualTo(supportTicket.getId());
         Assertions.assertThat(result.getContent().get(0).title()).isEqualTo("Issue with login");
-        Assertions.assertThat(result.getContent().get(0).description()).isEqualTo("Unable to login with correct credentials");
+        Assertions.assertThat(result.getContent().get(0).description())
+                .isEqualTo("Unable to login with correct credentials");
     }
 
     @Test
@@ -125,7 +132,7 @@ public class SupportTicketServiceTest {
         Mockito.when(ticketMapper.toResponseDto(supportTicket)).thenReturn(responseDto);
         Mockito.when(ticketSupportRepository.existsByTitle(Mockito.anyString())).thenReturn(false);
         Mockito.when(ticketSupportRepository.save(Mockito.any(SupportTicket.class))).thenReturn(supportTicket);
-
+        Mockito.doNothing().when(producerService).sendMessage(EventEnum.CREATED, responseDto);
         ResponseTicketDTO result = supportTicketService.create(requestDto);
 
         Assertions.assertThat(result).isNotNull();
@@ -158,9 +165,8 @@ public class SupportTicketServiceTest {
         Mockito.when(ticketSupportRepository.findById(id)).thenReturn(Optional.of(supportTicket));
         Mockito.when(ticketSupportRepository.existsByTitleAndIdNot(requestDto.title(), id)).thenReturn(false);
         Mockito.when(ticketSupportRepository.save(supportTicket)).thenReturn(supportTicket);
-
         Mockito.when(ticketMapper.toResponseDto(supportTicket)).thenReturn(responseDto);
-
+        Mockito.doNothing().when(producerService).sendMessage(EventEnum.UPDATED, responseDto);
         var result = supportTicketService.update(id, requestDto);
 
         Assertions.assertThat(result).isNotNull();
@@ -201,7 +207,11 @@ public class SupportTicketServiceTest {
     @DisplayName("Should delete a support ticket successfully")
     public void testDeleteSupportTicket() {
         var id = UUID.randomUUID();
-        Mockito.when(ticketSupportRepository.existsById(id)).thenReturn(true);
+
+        Mockito.when(ticketSupportRepository.findById(id)).thenReturn(Optional.of(supportTicket));
+        Mockito.when(ticketMapper.toResponseDto(supportTicket)).thenReturn(responseDto);
+        Mockito.doNothing().when(producerService)
+                .sendMessage(EventEnum.DELETED, responseDto);
 
         supportTicketService.delete(id);
 
@@ -213,7 +223,8 @@ public class SupportTicketServiceTest {
     @DisplayName("Should throw exception when deleting a non-existent ticket")
     public void testDeleteSupportTicket_NotFound() {
         var id = UUID.randomUUID();
-        Mockito.when(ticketSupportRepository.existsById(id)).thenReturn(false);
+        Mockito.when(ticketSupportRepository.findById(id)).thenReturn(Optional.empty());
+        
         Assertions.assertThatThrownBy(() -> supportTicketService.delete(id))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Ticket not found with id: " + id);
