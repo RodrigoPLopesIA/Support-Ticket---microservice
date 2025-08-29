@@ -57,7 +57,7 @@ public class SupportTicketService {
         var response = ticketMapper.toResponseDto(createdTicket);
 
         producerService
-                .sendMessage(new KafkaMessageDTO(EventEnum.CREATED, response.id(), new Date(), response));
+                .sendMessage(EventEnum.CREATED, response);
         return response;
 
     }
@@ -78,7 +78,7 @@ public class SupportTicketService {
 
         var response = ticketMapper.toResponseDto(updatedTicket);
         producerService
-                .sendMessage(new KafkaMessageDTO(EventEnum.UPDATED, response.id(), new Date(), response));
+                .sendMessage(EventEnum.UPDATED, response);
         return response;
     }
 
@@ -87,8 +87,7 @@ public class SupportTicketService {
                 .orElseThrow(() -> new EntityNotFoundException("Ticket not found with id: " + id));
 
         producerService
-                .sendMessage(new KafkaMessageDTO(EventEnum.DELETED, response.getId(), new Date(),
-                        ticketMapper.toResponseDto(response)));
+                .sendMessage(EventEnum.DELETED, ticketMapper.toResponseDto(response));
 
         ticketSupportRepository.deleteById(id);
     }
