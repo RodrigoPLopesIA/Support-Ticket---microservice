@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import com.rodrigolopes.ms.support_ticket.dto.RequestTicketDTO;
@@ -25,6 +26,9 @@ public class SupportTicketService {
 
     @Autowired
     private TicketMapper ticketMapper;
+
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
 
     public Page<ResponseTicketDTO> getAll(Pageable pageable) {
         return ticketSupportRepository.findAll(pageable)
@@ -45,6 +49,8 @@ public class SupportTicketService {
         var supportTicket = ticketMapper.toEntity(requestTicketDTO);
 
         var createdTicket = ticketSupportRepository.save(supportTicket);
+
+        kafkaTemplate.send("ticket-events", "New ticket created with ID: " + createdTicket.getId());
         return ticketMapper.toResponseDto(createdTicket);
 
     }
