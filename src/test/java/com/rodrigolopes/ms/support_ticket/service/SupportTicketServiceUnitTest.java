@@ -33,7 +33,7 @@ import com.rodrigolopes.ms.support_ticket.services.SupportTicketService;
 import jakarta.persistence.EntityNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
-public class SupportTicketServiceTest {
+public class SupportTicketServiceUnitTest {
 
     @InjectMocks
     private SupportTicketService supportTicketService;
