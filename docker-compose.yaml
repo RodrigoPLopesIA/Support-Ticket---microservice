@@ -54,7 +54,7 @@ services:
 
   ticket_service:
     build:
-      context: .   # raiz do projeto onde está o Dockerfile
+      context: . 
       dockerfile: Dockerfile
     container_name: ticket_service
     depends_on:
