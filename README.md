@@ -4,6 +4,11 @@ A **Spring Boot 3 + Java 21** microservice for managing support tickets, integra
 
 ---
 
+
+## Clone project 
+```bash 
+https://github.com/RodrigoPLopesIA/Support-Ticket---microservice.git
+```
 ## Setup
 
 ### 1. Requirements
