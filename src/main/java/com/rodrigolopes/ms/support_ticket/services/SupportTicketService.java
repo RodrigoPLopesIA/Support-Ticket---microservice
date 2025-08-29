@@ -55,7 +55,7 @@ public class SupportTicketService {
         var createdTicket = ticketSupportRepository.save(supportTicket);
 
         var response = ticketMapper.toResponseDto(createdTicket);
-        
+
         producerService
                 .sendMessage(new KafkaMessageDTO(EventEnum.CREATED, response.id(), new Date(), response));
         return response;
@@ -76,14 +76,19 @@ public class SupportTicketService {
 
         var updatedTicket = ticketSupportRepository.save(existingTicket);
 
-        return ticketMapper.toResponseDto(updatedTicket);
+        var response = ticketMapper.toResponseDto(updatedTicket);
+        producerService
+                .sendMessage(new KafkaMessageDTO(EventEnum.UPDATED, response.id(), new Date(), response));
+        return response;
     }
 
     public void delete(UUID id) {
+        var response = this.ticketSupportRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Ticket not found with id: " + id));
 
-        if (!ticketSupportRepository.existsById(id)) {
-            throw new EntityNotFoundException("Ticket not found with id: " + id);
-        }
+        producerService
+                .sendMessage(new KafkaMessageDTO(EventEnum.DELETED, response.getId(), new Date(),
+                        ticketMapper.toResponseDto(response)));
 
         ticketSupportRepository.deleteById(id);
     }
