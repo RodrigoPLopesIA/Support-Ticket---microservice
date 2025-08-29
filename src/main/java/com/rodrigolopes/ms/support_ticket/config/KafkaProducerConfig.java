@@ -22,6 +22,7 @@ public class KafkaProducerConfig {
 
     @Value("${kafka.topic.ticket-events}")
     private String ticketEventsTopic;
+    
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
