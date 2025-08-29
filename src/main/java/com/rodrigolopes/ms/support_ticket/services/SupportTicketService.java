@@ -1,17 +1,21 @@
 package com.rodrigolopes.ms.support_ticket.services;
 
 import com.fasterxml.jackson.databind.DatabindException;
+import com.rodrigolopes.ms.support_ticket.enums.EventEnum;
 import com.rodrigolopes.ms.support_ticket.enums.TicketStatus;
 import com.rodrigolopes.ms.support_ticket.mapper.TicketMapper;
 
+import java.util.Date;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties.Producer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import com.rodrigolopes.ms.support_ticket.dto.KafkaMessageDTO;
 import com.rodrigolopes.ms.support_ticket.dto.RequestTicketDTO;
 import com.rodrigolopes.ms.support_ticket.dto.ResponseTicketDTO;
 import com.rodrigolopes.ms.support_ticket.repositories.TicketSupportRepository;
@@ -28,7 +32,7 @@ public class SupportTicketService {
     private TicketMapper ticketMapper;
 
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private ProducerService producerService;
 
     public Page<ResponseTicketDTO> getAll(Pageable pageable) {
         return ticketSupportRepository.findAll(pageable)
@@ -50,8 +54,10 @@ public class SupportTicketService {
 
         var createdTicket = ticketSupportRepository.save(supportTicket);
 
-        kafkaTemplate.send("ticket-events", "New ticket created with ID: " + createdTicket.getId());
-        return ticketMapper.toResponseDto(createdTicket);
+        var response = ticketMapper.toResponseDto(createdTicket);
+        producerService
+                .sendMessage("test");
+        return response;
 
     }
 
